@@ -1,0 +1,1183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RideReady — Training &amp; Fuel Dashboard</title>
+<style>
+:root{
+  --bg:#0b1220; --card:#121a2b; --card2:#0e1524; --line:#22304a;
+  --tx:#e2e8f0; --mut:#8fa3bf; --accent:#38bdf8;
+  --green:#4ade80; --yellow:#fbbf24; --red:#f87171; --blue:#60a5fa;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--bg);color:var(--tx);font:15px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;padding-bottom:60px}
+header{display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding:12px 20px;border-bottom:1px solid var(--line);background:var(--card2);position:sticky;top:0;z-index:20}
+.brand{font-weight:700;font-size:18px;letter-spacing:.3px;white-space:nowrap}
+.logo{filter:drop-shadow(0 0 6px rgba(56,189,248,.6))}
+nav{display:flex;gap:4px;flex-wrap:wrap}
+nav button{background:none;border:none;color:var(--mut);padding:7px 13px;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600}
+nav button:hover{color:var(--tx);background:rgba(56,189,248,.08)}
+nav button.active{color:#0b1220;background:var(--accent)}
+.hdr-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.chip{background:rgba(56,189,248,.12);color:var(--accent);border:1px solid rgba(56,189,248,.35);padding:4px 10px;border-radius:999px;font-size:12.5px;font-weight:600;cursor:pointer;white-space:nowrap}
+.gear{background:none;border:1px solid var(--line);color:var(--mut);border-radius:8px;width:32px;height:32px;cursor:pointer;font-size:15px}
+.gear:hover{color:var(--tx);border-color:var(--accent)}
+main{max-width:1080px;margin:0 auto;padding:18px 20px}
+footer{position:fixed;bottom:0;left:0;right:0;background:var(--card2);border-top:1px solid var(--line);color:var(--mut);font-size:11.5px;padding:7px 20px;text-align:center}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 16px 14px}
+.card h3{margin:0 0 10px;font-size:14px;letter-spacing:.6px;text-transform:uppercase;color:var(--mut)}
+.card h2{margin:0 0 8px;font-size:18px}
+.sub{color:var(--mut);font-size:13px}
+.row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.spread{justify-content:space-between}
+.stack{display:flex;flex-direction:column;gap:8px}
+.badge{display:inline-block;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:700;cursor:pointer;border:1px solid transparent}
+.badge.rest{background:rgba(96,165,250,.15);color:var(--blue)}
+.badge.exercise{background:rgba(74,222,128,.15);color:var(--green)}
+.badge.coach{background:rgba(251,191,36,.15);color:var(--yellow)}
+.badge.plain{cursor:default}
+button.btn{background:var(--accent);color:#0b1220;border:none;border-radius:8px;padding:8px 14px;font-weight:700;font-size:13.5px;cursor:pointer}
+button.btn:hover{filter:brightness(1.1)}
+button.btn.ghost{background:none;color:var(--tx);border:1px solid var(--line)}
+button.btn.ghost:hover{border-color:var(--accent);color:var(--accent)}
+button.btn.small{padding:4px 10px;font-size:12px}
+button.btn.danger{background:none;border:1px solid rgba(248,113,113,.4);color:var(--red)}
+input,select,textarea{background:var(--card2);border:1px solid var(--line);color:var(--tx);border-radius:8px;padding:8px 10px;font-size:14px;width:100%;font-family:inherit}
+input:focus,textarea:focus{outline:none;border-color:var(--accent)}
+label.f{display:block;font-size:12px;color:var(--mut);margin:10px 0 4px;font-weight:600}
+.bar{background:var(--card2);border:1px solid var(--line);border-radius:999px;height:10px;overflow:hidden;margin-top:4px}
+.bar i{display:block;height:100%;border-radius:999px;background:var(--blue);transition:width .3s}
+.bar i.ok{background:var(--green)} .bar i.over{background:var(--red)}
+.bar i.warn{background:var(--yellow)}
+.meter{margin:8px 0}
+.meter .lab{display:flex;justify-content:space-between;font-size:12.5px;color:var(--mut)}
+.meter .lab b{color:var(--tx)}
+.zone{display:flex;justify-content:space-between;gap:10px;padding:5px 8px;border-radius:7px;font-size:13px}
+.zone:nth-child(odd){background:var(--card2)}
+.zone b{white-space:nowrap}
+.check{display:flex;align-items:center;gap:9px;padding:8px 10px;border:1px solid var(--line);border-radius:9px;cursor:pointer;font-size:13.5px;background:var(--card2)}
+.check .tick{width:20px;height:20px;border-radius:6px;border:1.5px solid var(--line);display:inline-flex;align-items:center;justify-content:center;font-size:13px;color:transparent;flex:none}
+.check.done{border-color:rgba(74,222,128,.5)}
+.check.done .tick{background:var(--green);color:#0b1220;border-color:var(--green)}
+.food-item{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:7px 10px;border-bottom:1px solid var(--line);font-size:13.5px}
+.food-item .macros{color:var(--mut);font-size:12px;white-space:nowrap}
+.food-item button{background:none;border:none;color:var(--red);cursor:pointer;font-size:15px;padding:2px 6px}
+.res-list .food-item{cursor:pointer}
+.res-list .food-item:hover{background:rgba(56,189,248,.08)}
+table.wk{width:100%;border-collapse:collapse;font-size:13px}
+table.wk th{color:var(--mut);text-align:left;font-size:11.5px;text-transform:uppercase;letter-spacing:.5px;padding:6px 8px;border-bottom:1px solid var(--line)}
+table.wk td{padding:8px;border-bottom:1px solid var(--line);vertical-align:top}
+table.wk td.done{color:var(--green)}
+table.wk td.miss{color:var(--red)}
+.fridge-chips{display:flex;flex-wrap:wrap;gap:6px}
+.fridge-chips span{background:rgba(74,222,128,.12);border:1px solid rgba(74,222,128,.35);color:var(--green);border-radius:999px;padding:4px 10px;font-size:12.5px;display:inline-flex;gap:7px;align-items:center}
+.fridge-chips span button{background:none;border:none;color:var(--green);cursor:pointer;font-size:12px;padding:0}
+.recipe{border:1px solid var(--line);border-radius:12px;padding:13px;background:var(--card2);display:flex;flex-direction:column;gap:7px}
+.recipe .cov{font-weight:700;font-size:13px}
+.ing{font-size:12.5px;color:var(--mut);display:flex;flex-wrap:wrap;gap:5px}
+.ing b{font-weight:500;padding:2px 8px;border-radius:6px;border:1px solid var(--line)}
+.ing b.have{color:var(--green);border-color:rgba(74,222,128,.4)}
+.ing b.need{color:var(--yellow);border-color:rgba(251,191,36,.4)}
+.rec-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+.chart{width:100%;height:auto}
+#modal{display:none}
+#modal.open{display:block}
+.modal-bg{position:fixed;inset:0;background:rgba(2,6,16,.7);z-index:50}
+.modal-card{position:fixed;z-index:51;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;width:min(420px,92vw);max-height:88vh;overflow:auto}
+.modal-card h3{margin:0 0 6px;font-size:16px}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:16px}
+.kv{display:flex;justify-content:space-between;gap:12px;padding:5px 0;font-size:13.5px;border-bottom:1px dashed var(--line)}
+.kv b{text-align:right}
+.note{background:rgba(56,189,248,.08);border:1px solid rgba(56,189,248,.25);border-radius:10px;padding:10px 12px;font-size:13px;color:var(--tx)}
+.note.warn{background:rgba(251,191,36,.08);border-color:rgba(251,191,36,.3)}
+.note.good{background:rgba(74,222,128,.08);border-color:rgba(74,222,128,.3)}
+ul.groc{list-style:none;margin:6px 0;padding:0}
+ul.groc li{display:flex;justify-content:space-between;align-items:center;padding:6px 2px;border-bottom:1px dashed var(--line);font-size:13.5px}
+ul.groc li button{background:none;border:none;color:var(--red);cursor:pointer}
+.empty{color:var(--mut);font-size:13px;font-style:italic;padding:8px 0}
+.big{font-size:26px;font-weight:800}
+.center{text-align:center}
+.hrs-total{display:flex;gap:22px;flex-wrap:wrap;margin-top:10px}
+.hrs-total div b{font-size:20px}
+.hrs-total div{color:var(--mut);font-size:12px}
+.water-inc{display:flex;align-items:center;gap:8px}
+.water-inc button{width:34px;height:34px;border-radius:8px;border:1px solid var(--line);background:var(--card2);color:var(--accent);font-size:18px;cursor:pointer}
+@media(max-width:640px){main{padding:12px}header{padding:10px 12px}}
+
+</style>
+</head>
+<body>
+<header>
+  <div class="brand"><span class="logo">&#128694;</span> RideReady</div>
+  <nav id="nav">
+    <button data-view="today" class="active">Today</button>
+    <button data-view="week">Week</button>
+    <button data-view="fuel">Fuel</button>
+    <button data-view="meals">Meals</button>
+    <button data-view="progress">Progress</button>
+  </nav>
+  <div class="hdr-right">
+    <span id="hdr-ftp" class="chip" title="FTP — click for settings"></span>
+    <button id="btn-settings" class="gear" title="Settings">&#9881;</button>
+  </div>
+</header>
+<main id="view"></main>
+<footer>RideReady gives estimates and suggestions only — follow your coach and nutritionist. Not medical advice. All data stays in your browser (localStorage); use Settings &#8594; Export for backups.</footer>
+<script>
+// RideReady data: food DB (per-100g macros, s = default serving grams),
+// recipes (per serving), and the weekly training template.
+// Macro values are reasonable estimates — edit anything in Settings or by adding custom foods.
+'use strict';
+
+const FOODS = [
+  // proteins
+  {n:'Chicken breast, cooked', p:31, c:0, f:3.6, fib:0, s:150},
+  {n:'Chicken thigh, cooked', p:26, c:0, f:9, fib:0, s:150},
+  {n:'Ground beef 90% lean, cooked', p:26, c:0, f:15, fib:0, s:125},
+  {n:'Ground turkey 93% lean, cooked', p:23, c:0, f:8, fib:0, s:125},
+  {n:'Salmon, cooked', p:25, c:0, f:12, fib:0, s:150},
+  {n:'Cod, cooked', p:20, c:0, f:1, fib:0, s:150},
+  {n:'Tuna, canned in water', p:25, c:0, f:1, fib:0, s:120},
+  {n:'Shrimp, cooked', p:24, c:0, f:0.3, fib:0, s:150},
+  {n:'Eggs, whole', p:13, c:1.1, f:9.5, fib:0, s:100},
+  {n:'Egg whites', p:11, c:0.7, f:0.2, fib:0, s:200},
+  {n:'Whey protein powder', p:80, c:8, f:6, fib:1, s:30},
+  {n:'Tofu, firm', p:15, c:2, f:8, fib:1, s:150},
+  {n:'Tempeh', p:19, c:9, f:11, fib:3, s:100},
+  {n:'Black beans, cooked', p:9, c:22, f:0.5, fib:8.7, s:150},
+  {n:'Lentils, cooked', p:9, c:20, f:0.4, fib:7.9, s:150},
+  {n:'Edamame', p:11, c:9, f:4.7, fib:5, s:100},
+  // dairy
+  {n:'Greek yogurt, nonfat', p:10, c:4, f:0.4, fib:0, s:200},
+  {n:'Greek yogurt, 2%', p:9, c:4, f:1.9, fib:0, s:200},
+  {n:'Cottage cheese, 2%', p:11, c:3.4, f:2, fib:0, s:200},
+  {n:'Milk, 2%', p:3.4, c:5, f:2, fib:0, s:250},
+  {n:'Oat milk', p:1, c:12, f:1.6, fib:1, s:250},
+  {n:'Cheddar cheese', p:25, c:1.3, f:33, fib:0, s:30},
+  {n:'Mozzarella, part-skim', p:24, c:2.6, f:16, fib:0, s:40},
+  {n:'Feta cheese', p:14, c:4, f:21, fib:0, s:30},
+  {n:'Butter', p:0.9, c:0.1, f:81, fib:0, s:10},
+  // grains & carbs
+  {n:'Oats, dry', p:13, c:66, f:7, fib:10, s:60},
+  {n:'Rice, white, cooked', p:2.7, c:28, f:0.3, fib:0.4, s:200},
+  {n:'Rice, brown, cooked', p:2.6, c:26, f:1, fib:1.6, s:200},
+  {n:'Quinoa, cooked', p:4.4, c:21, f:1.9, fib:2.8, s:180},
+  {n:'Pasta, cooked', p:5.8, c:31, f:0.9, fib:1.8, s:200},
+  {n:'Bread, whole wheat', p:13, c:41, f:3.4, fib:7, s:60},
+  {n:'Bagel, plain', p:10, c:50, f:1.5, fib:2.2, s:90},
+  {n:'Tortilla, flour', p:8, c:51, f:7, fib:3, s:60},
+  {n:'Sweet potato, cooked', p:2, c:20, f:0.1, fib:3, s:200},
+  {n:'Potato, cooked', p:2, c:17, f:0.1, fib:2.2, s:200},
+  {n:'Couscous, cooked', p:3.8, c:23, f:0.2, fib:1.4, s:180},
+  {n:'Rice cakes', p:8, c:81, f:2.8, fib:4, s:30},
+  {n:'Granola', p:10, c:64, f:30, fib:7, s:60},
+  {n:'Breakfast cereal, fortified', p:9, c:74, f:4, fib:10, s:50},
+  {n:'Tortilla chips', p:7, c:63, f:20, fib:5, s:40},
+  {n:'Pretzels', p:8, c:80, f:1, fib:3, s:40},
+  // fruit
+  {n:'Banana', p:1.1, c:23, f:0.3, fib:2.6, s:120},
+  {n:'Apple', p:0.3, c:14, f:0.2, fib:2.4, s:180},
+  {n:'Blueberries', p:0.7, c:14, f:0.3, fib:2.4, s:150},
+  {n:'Strawberries', p:0.7, c:7.7, f:0.3, fib:2, s:150},
+  {n:'Orange', p:0.9, c:12, f:0.1, fib:2.4, s:150},
+  {n:'Dates, dried', p:2.5, c:75, f:0.4, fib:8, s:60},
+  {n:'Raisins', p:3, c:79, f:0.5, fib:3.7, s:40},
+  {n:'Mango', p:0.8, c:15, f:0.4, fib:1.6, s:150},
+  {n:'Pineapple', p:0.5, c:13, f:0.1, fib:1.4, s:150},
+  // vegetables
+  {n:'Broccoli, cooked', p:2.8, c:7, f:0.4, fib:2.6, s:150},
+  {n:'Spinach, raw', p:2.9, c:3.6, f:0.4, fib:2.2, s:100},
+  {n:'Mixed greens', p:1.5, c:2, f:0.2, fib:1.5, s:80},
+  {n:'Bell pepper', p:1, c:6, f:0.3, fib:2.1, s:120},
+  {n:'Cucumber', p:0.7, c:3.6, f:0.1, fib:0.5, s:100},
+  {n:'Tomato', p:0.9, c:3.9, f:0.2, fib:1.2, s:120},
+  {n:'Zucchini, cooked', p:1.2, c:3.1, f:0.3, fib:1, s:150},
+  {n:'Carrots', p:0.9, c:9.6, f:0.2, fib:2.8, s:120},
+  {n:'Avocado', p:2, c:8.5, f:15, fib:6.7, s:100},
+  {n:'Mushrooms', p:3.1, c:3.3, f:0.3, fib:1, s:100},
+  {n:'Onion', p:1.1, c:9.3, f:0.1, fib:1.7, s:100},
+  {n:'Cauliflower', p:1.9, c:5, f:0.3, fib:2, s:150},
+  {n:'Asparagus', p:2.2, c:3.9, f:0.1, fib:2.1, s:120},
+  // fats & nuts
+  {n:'Almonds', p:21, c:22, f:50, fib:12.5, s:30},
+  {n:'Peanut butter', p:25, c:20, f:50, fib:6, s:32},
+  {n:'Walnuts', p:15, c:14, f:65, fib:6.7, s:30},
+  {n:'Chia seeds', p:17, c:42, f:31, fib:34, s:15},
+  {n:'Olive oil', p:0, c:0, f:100, fib:0, s:14},
+  {n:'Mixed nuts', p:20, c:21, f:54, fib:7, s:30},
+  {n:'Hummus', p:7.9, c:14, f:10, fib:6, s:60},
+  // drinks & extras
+  {n:'Sports drink (6% carbs)', p:0, c:6, f:0, fib:0, s:500},
+  {n:'Orange juice', p:0.7, c:10, f:0.2, fib:0.2, s:250},
+  {n:'Coconut water', p:0.2, c:3.7, f:0.2, fib:0, s:250},
+  {n:'Energy gel', p:0, c:70, f:0, fib:0, s:40},
+  {n:'Protein bar', p:33, c:40, f:13, fib:8, s:60},
+  {n:'Dark chocolate', p:4.7, c:46, f:43, fib:11.9, s:25},
+  {n:'Honey', p:0, c:82, f:0, fib:0, s:20},
+  {n:'Maple syrup', p:0, c:67, f:0, fib:0, s:20},
+  {n:'Jam', p:0.4, c:70, f:0, fib:0.5, s:20},
+];
+
+const RECIPES = [
+  // ---- Nutritionist plan: example-day meals (Lauren Trapani, RD) ----
+  {n:'Oatmeal + whey + almond butter + berries (RD)', meal:'Breakfast', tag:'RD', per:{kcal:400, p:28, c:45, f:11, fib:7},
+   ing:['oats 1 cup cooked', 'whey protein 1 scoop', 'almond butter 1 tbsp', 'berries 1/2 cup']},
+  {n:'Eggs + oatmeal with berries (RD)', meal:'Breakfast', tag:'RD', per:{kcal:480, p:37, c:38, f:20, fib:5},
+   ing:['eggs 3', 'egg whites 1 cup', 'oats 1/2 cup', 'berries']},
+  {n:'Protein smoothie: whey, berries, spinach, oats, chia (RD)', meal:'Breakfast', tag:'RD', per:{kcal:440, p:36, c:49, f:10, fib:8},
+   ing:['whey protein', 'berries', 'spinach', 'oats', 'chia seeds 1 tbsp']},
+  {n:'Overnight oats: whey, oats, berries (RD)', meal:'Breakfast', tag:'RD', per:{kcal:430, p:33, c:52, f:9, fib:8},
+   ing:['oats', 'whey protein', 'berries', 'milk', 'cinnamon']},
+  {n:'Egg white + veggie omelet + oatmeal (RD)', meal:'Breakfast', tag:'RD', per:{kcal:430, p:35, c:38, f:12, fib:5},
+   ing:['egg whites', 'eggs', 'bell pepper', 'oats 1/2 cup']},
+  {n:'Protein pancakes: whey + oats + eggs (RD)', meal:'Breakfast', tag:'RD', per:{kcal:470, p:37, c:50, f:12, fib:6},
+   ing:['whey protein', 'oats', 'eggs', 'blueberries']},
+  {n:'Grilled chicken + rice + veggies + olive oil (RD)', meal:'Lunch', tag:'RD', per:{kcal:610, p:52, c:55, f:17, fib:6},
+   ing:['chicken breast 7 oz', 'rice 1 cup', 'mixed vegetables', 'olive oil']},
+  {n:'Tuna bowl: quinoa, avocado & veggies (RD)', meal:'Lunch', tag:'RD', per:{kcal:580, p:44, c:52, f:20, fib:9},
+   ing:['tuna 6 oz', 'quinoa', 'avocado', 'mixed vegetables']},
+  {n:'Chicken salad with mixed greens (RD)', meal:'Lunch', tag:'RD', per:{kcal:520, p:49, c:18, f:28, fib:6},
+   ing:['chicken breast 7 oz', 'mixed greens', 'vinaigrette', 'olive oil']},
+  {n:'Turkey breast + jasmine rice + veggies (RD)', meal:'Lunch', tag:'RD', per:{kcal:600, p:52, c:65, f:13, fib:6},
+   ing:['turkey breast 7 oz', 'rice 1 cup', 'vegetables']},
+  {n:'Grilled chicken wrap, whole grain tortilla (RD)', meal:'Lunch', tag:'RD', per:{kcal:520, p:42, c:50, f:15, fib:7},
+   ing:['chicken breast', 'whole grain tortilla', 'vegetables']},
+  {n:'Flank steak + baked potato + asparagus (RD)', meal:'Dinner', tag:'RD', per:{kcal:640, p:46, c:52, f:24, fib:7},
+   ing:['flank steak 6 oz', 'potato', 'asparagus']},
+  {n:'Salmon + potatoes + greens (RD)', meal:'Dinner', tag:'RD', per:{kcal:590, p:44, c:48, f:24, fib:6},
+   ing:['salmon 6 oz', 'potatoes 250 g', 'mixed greens', 'olive oil']},
+  {n:'Shrimp stir fry + cauliflower rice (RD)', meal:'Dinner', tag:'RD', per:{kcal:480, p:42, c:25, f:22, fib:8},
+   ing:['shrimp 8 oz', 'cauliflower rice', 'vegetables', 'olive oil']},
+  {n:'Chicken + cauliflower mash + Brussels (RD)', meal:'Dinner', tag:'RD', per:{kcal:520, p:52, c:25, f:22, fib:8},
+   ing:['chicken breast 7 oz', 'cauliflower', 'brussels sprouts']},
+  {n:'Lean beef or turkey + sweet potato + broccoli (RD)', meal:'Dinner', tag:'RD', per:{kcal:630, p:45, c:50, f:24, fib:8},
+   ing:['lean beef or turkey 6 oz', 'sweet potato 300 g', 'broccoli']},
+  {n:'White fish + rice + veggies (RD)', meal:'Dinner', tag:'RD', per:{kcal:520, p:44, c:55, f:12, fib:6},
+   ing:['white fish 7 oz', 'rice 3/4 cup', 'vegetables']},
+  {n:'Pork tenderloin + roast potatoes + green beans (RD)', meal:'Dinner', tag:'RD', per:{kcal:580, p:44, c:52, f:19, fib:8},
+   ing:['pork tenderloin 6 oz', 'potatoes', 'green beans']},
+  {n:'Turkey & quinoa stuffed peppers (RD prep)', meal:'Dinner', tag:'RD', per:{kcal:540, p:42, c:55, f:16, fib:10},
+   ing:['ground turkey', 'quinoa', 'bell pepper', 'tomato']},
+  {n:'Turkey lettuce wraps + rice (RD prep)', meal:'Dinner', tag:'RD', per:{kcal:520, p:45, c:48, f:16, fib:7},
+   ing:['ground turkey', 'lettuce', 'rice', 'vegetables']},
+  {n:'Greek yogurt + banana (RD snack)', meal:'Snack', tag:'RD', per:{kcal:230, p:18, c:34, f:3, fib:3},
+   ing:['greek yogurt', 'banana']},
+  {n:'Cottage cheese + pineapple (RD snack)', meal:'Snack', tag:'RD', per:{kcal:210, p:24, c:22, f:3, fib:2},
+   ing:['cottage cheese', 'pineapple']},
+  {n:'Rice cake + peanut butter + mini shake (RD pre-workout)', meal:'Snack', tag:'RD', per:{kcal:310, p:18, c:38, f:9, fib:4},
+   ing:['rice cakes', 'peanut butter', 'whey protein']},
+  {n:'Beef jerky + apple (RD snack)', meal:'Snack', tag:'RD', per:{kcal:240, p:25, c:22, f:6, fib:4},
+   ing:['beef jerky', 'apple']},
+
+  // ---- EF Pro Cycling team recipes (efprocycling.com) ----
+  {n:'EF Protein Pancakes', meal:'Breakfast', tag:'EF Pro Cycling', per:{kcal:200, p:16, c:23, f:4, fib:2},
+   ing:['whey protein 30 g', 'oat flour 40 g', 'banana 100 g', 'egg', 'milk 70 g', 'baking powder'],
+   src:'efprocycling.com/tips-recipes/team-recipe-protein-pancakes'},
+  {n:'EF Lemon Chia Overnight Oats', meal:'Breakfast', tag:'EF Pro Cycling', per:{kcal:318, p:11, c:43, f:8, fib:6},
+   ing:['oats', 'almond milk', 'oat milk', 'chia seeds', 'honey', 'lemon'],
+   src:'efprocycling.com/tips-recipes/lemon-chia-overnight-oats-recipe'},
+  {n:'EF Banana Sourdough Pancakes', meal:'Breakfast', tag:'EF Pro Cycling', per:{kcal:520, p:14, c:92, f:10, fib:6},
+   ing:['flour 1 cup', 'oat milk 1 cup', 'banana', 'honey', 'cinnamon', 'sourdough starter'],
+   src:'efprocycling.com/tips-recipes/healthy-banana-sourdough-pancakes-recipe'},
+  {n:'EF Energy Balls (6 balls)', meal:'Snack', tag:'EF Pro Cycling', per:{kcal:460, p:11, c:83, f:10, fib:14},
+   ing:['oats', 'dates', 'chia seeds', 'agave nectar'],
+   src:'efprocycling.com/tips-recipes/team-recipe-energy-balls'},
+  {n:'EF On-the-bike Rice Cakes (2 cakes)', meal:'Snack', tag:'EF Pro Cycling', per:{kcal:190, p:4, c:29, f:6, fib:1},
+   ing:['white rice', 'cream cheese', 'sugar', 'coconut oil', 'vanilla'],
+   src:'efprocycling.com/tips-recipes/team-recipe-on-the-bike-rice-cakes'},
+  {n:'Chicken bowl: chicken + rice + peppers (RD prep day 1)', meal:'Dinner', tag:'RD', per:{kcal:590, p:48, c:62, f:15, fib:7},
+   ing:['chicken breast', 'rice', 'peppers', 'onion', 'salsa']},
+];
+
+
+// Weekly template — Mon..Sun. bike = planned minutes on the bike.
+// Structure: 8+ h riding, 2 lifts, daily large+small mobility, coach session Thu.
+const WEEK_TEMPLATE = [
+  {d:'Mon', name:'Recovery spin', type:'rest', bike:30,
+   desc:'Easy Z1 spin, high cadence, 90+ rpm. Keep it conversational — this is active recovery.', lift:false, coach:false},
+  {d:'Tue', name:'Threshold intervals', type:'exercise', bike:75,
+   desc:'15 min warmup, then 4 × 8 min at 90–100% FTP with 4 min easy spin between, 10 min cooldown.', lift:true, coach:false},
+  {d:'Wed', name:'Endurance ride', type:'exercise', bike:90,
+   desc:'Steady Zone 2, 85–95 rpm. Nose-breathing pace you could hold for hours.', lift:false, coach:false},
+  {d:'Thu', name:'Coach day + strength', type:'rest', bike:0,
+   desc:'Mobility coach session and Lift #2. Optional 30–45 min easy spin if you feel fresh.', lift:true, coach:true},
+  {d:'Fri', name:'Endurance ride', type:'rest', bike:60,
+   desc:'Easy Zone 2 spin to open the legs before the weekend. Keep intensity low.', lift:false, coach:false},
+  {d:'Sat', name:'Long ride', type:'exercise', bike:180,
+   desc:'Zone 2 endurance ride. Fuel with 60–90 g carbs/hr and drink to thirst plan. This is the weight-loss + aerobic engine builder.', lift:false, coach:false},
+  {d:'Sun', name:'Tempo ride', type:'exercise', bike:120,
+   desc:'Zone 2–3 with 3 × 10 min at tempo (76–90% FTP), 5 min easy between. Cooldown last 15 min.', lift:false, coach:false},
+];
+
+
+// RideReady core: state, helpers, router, event delegation, modals.
+'use strict';
+
+const LS_KEY = 'rideready-v1';
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+const pad = n => String(n).padStart(2, '0');
+const dkey = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+const todayKey = () => dkey(new Date());
+const parseKey = k => { const [y, m, d] = k.split('-').map(Number); return new Date(y, m - 1, d); };
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const round1 = n => Math.round(n * 10) / 10;
+const nf = n => Math.round(n).toLocaleString('en-US');
+const kcalOf = m => Math.round(4 * m.p + 4 * m.c + 9 * m.f);
+const addDays = (k, n) => { const d = parseKey(k); d.setDate(d.getDate() + n); return dkey(d); };
+const DOW = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const MONTH = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const fmtDate = k => { const d = parseKey(k); return `${DOW[d.getDay()]} ${MONTH[d.getMonth()]} ${d.getDate()}`; };
+
+// ---------- state ----------
+const DEFAULTS = {
+  settings: { name: '', ftp: 220, goalFtp: 250, weightKg: null, waterBase: 3, sweatPerHr: 0.75, ftpPinned: false },
+  days: {},        // 'YYYY-MM-DD' -> {food:[], water, ride:{minutes,avgPower,notes}|null, whoop:{...}|null, mob:{large,small}, liftDone, dayType:'rest'|'exercise'|null}
+  customFoods: [], // {n, kcal, p, c, f, fib} per serving
+  fridge: [],      // {name, qty}
+  grocery: [],     // {name}
+  weightLog: [],   // {date, kg}
+  ftpLog: [],      // {date, ftp}
+};
+let S = loadState();
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (!raw) return structuredClone(DEFAULTS);
+    const p = JSON.parse(raw);
+    return { ...structuredClone(DEFAULTS), ...p, settings: { ...DEFAULTS.settings, ...(p.settings || {}) } };
+  } catch (e) { return structuredClone(DEFAULTS); }
+}
+
+function day(k) {
+  k = k || todayKey();
+  if (!S.days[k]) S.days[k] = { food: [], water: 0, ride: null, whoop: null, mob: { large: false, small: false }, liftDone: false, dayType: null };
+  const d = S.days[k];
+  d.food = d.food || []; d.water = d.water || 0;
+  d.mob = d.mob || { large: false, small: false };
+  return d;
+}
+function peekDay(k) { return S.days[k] || null; }
+
+// ---------- training model ----------
+function tplFor(k) { return WEEK_TEMPLATE[(parseKey(k).getDay() + 6) % 7]; }
+function dayType(k) { const d = peekDay(k); return (d && d.dayType) || tplFor(k).type; }
+function bikeMinutes(k) { const d = peekDay(k); return (d && d.ride && d.ride.minutes) || 0; }
+function zones() {
+  const ftp = +S.settings.ftp || 220;
+  return [
+    ['Z1 Active recovery', `< ${Math.round(ftp * .55)} W`],
+    ['Z2 Endurance', `${Math.round(ftp * .55)}–${Math.round(ftp * .75)} W`],
+    ['Z3 Tempo', `${Math.round(ftp * .76)}–${Math.round(ftp * .90)} W`],
+    ['Z4 Threshold', `${Math.round(ftp * .91)}–${Math.round(ftp * 1.05)} W`],
+    ['Z5 VO2 max', `> ${Math.round(ftp * 1.06)} W`],
+  ];
+}
+function waterTarget(k) {
+  const mins = Math.max(bikeMinutes(k), (dayType(k) === 'exercise' ? tplFor(k).bike : 0));
+  return round1((+S.settings.waterBase || 3) + ((+S.settings.sweatPerHr || 0.75) * mins / 60));
+}
+function targets(k) {
+  // Lauren Trapani RD protocol, Dec 1 2025: 1900–2100 kcal/day, protein 165–200g (min 120),
+  // carbs 140–220g (higher end on training days), fat 50–70g, fiber 38g. REE floor ~1800 kcal.
+  if (dayType(k) === 'exercise') return { kcalMin: 1900, kcalMax: 2100, p: 165, c: 220, f: 70, fib: 38 };
+  return { kcalMin: 1900, kcalMax: 2100, p: 165, c: 140, f: 50, fib: 38 };
+}
+function sleepRec(k) {
+  const d = peekDay(k), w = d && d.whoop;
+  const rideMin = bikeMinutes(k) || 0;
+  const tmr = tplFor(addDays(k, 1));
+  let h = 7.75, notes = [];
+  if (rideMin >= 120) { h += 0.5; notes.push('long ride today'); }
+  if (tmr.bike >= 150) { h += 0.75; notes.push('long ride tomorrow'); }
+  if (w) {
+    if (w.strain != null && w.strain >= 14) { h += 0.5; notes.push('high strain day'); }
+    if (w.recovery != null && w.recovery < 60) { h += 0.75; notes.push('low Whoop recovery'); }
+  }
+  h = Math.min(h, 9.5);
+  return { h, notes };
+}
+function ftpSuggestion() {
+  // Look at recent synced rides with avgPower; if they consistently sit far
+  // above/below current FTP mid-Z2/Z3 expectations, suggest a retest/adjust.
+  const rides = [];
+  for (let i = 0; i < 28; i++) {
+    const k = addDays(todayKey(), -i), d = peekDay(k);
+    if (d && d.ride && d.ride.avgPower) rides.push({ k, p: d.ride.avgPower, m: d.ride.minutes });
+  }
+  if (rides.length < 3) return null;
+  const ftp = +S.settings.ftp || 220;
+  const z2 = [ftp * 0.55, ftp * 0.75], z3top = ftp * 0.90;
+  const easy = rides.filter(r => r.m <= 150);           // short rides = likelier steady/tempo efforts
+  const pool = easy.length >= 3 ? easy : rides;
+  const avg = pool.reduce((a, r) => a + r.p, 0) / pool.length;
+  if (avg > z3top * 1.08) return { dir: 'up', avg: Math.round(avg), n: pool.length };
+  if (avg < z2[0] * 0.92) return { dir: 'down', avg: Math.round(avg), n: pool.length };
+  return null;
+}
+function recoveryColor(r) { return r == null ? '' : r >= 70 ? 'green' : r >= 50 ? 'yellow' : 'red'; }
+
+// ---------- day totals ----------
+function totals(k) {
+  const d = peekDay(k);
+  const t = { kcal: 0, p: 0, c: 0, f: 0, fib: 0 };
+  if (!d || !d.food) return t;
+  for (const it of d.food) { t.kcal += it.kcal; t.p += it.p; t.c += it.c; t.f += it.f; t.fib += it.fib; }
+  return t;
+}
+
+// ---------- ui helpers ----------
+function meter(label, cur, min, max, unit) {
+  // bar toward mid of range; color by where cur sits in [min,max]
+  const mid = (min + max) / 2;
+  let pct = Math.min(100, Math.round(cur / mid * 100));
+  let cls = cur >= min && cur <= max ? 'ok' : cur > max ? 'over' : (cur >= min * .85 ? 'warn' : '');
+  if (unit === 'g' || unit === 'L') { pct = Math.min(100, Math.round(cur / max * 100)); cls = cur >= min ? 'ok' : (cur >= min * .85 ? 'warn' : ''); }
+  const range = min === max ? nf(max) : `${nf(min)}–${nf(max)}`;
+  return `<div class="meter"><div class="lab"><span>${label}</span><b>${nf(cur)} / ${range} ${unit}</b></div><div class="bar"><i class="${cls}" style="width:${pct}%"></i></div></div>`;
+}
+function singleMeter(label, cur, target, unit, minOk) {
+  const pct = Math.min(100, Math.round(cur / target * 100));
+  const cls = cur >= (minOk ?? target) ? 'ok' : (cur >= (minOk ?? target) * .85 ? 'warn' : '');
+  return `<div class="meter"><div class="lab"><span>${label}</span><b>${round1(cur)} / ${round1(target)} ${unit}</b></div><div class="bar"><i class="${cls}" style="width:${pct}%"></i></div></div>`;
+}
+
+// ---------- router ----------
+let VIEW = 'today';
+const VIEWS = {};
+function render() {
+  $('#view').innerHTML = (VIEWS[VIEW] || VIEWS.today)();
+  $('#hdr-ftp').textContent = `FTP ${S.settings.ftp}W → ${S.settings.goalFtp}W`;
+}
+$$('#nav button').forEach(b => b.onclick = () => {
+  VIEW = b.dataset.view;
+  $$('#nav button').forEach(x => x.classList.toggle('active', x === b));
+  render();
+});
+
+// ---------- modals ----------
+function modal(html) {
+  let m = $('#modal');
+  if (!m) { m = document.createElement('div'); m.id = 'modal'; document.body.appendChild(m); }
+  m.innerHTML = `<div class="modal-bg" data-act="close-modal"></div><div class="modal-card">${html}</div>`;
+  m.classList.add('open');
+}
+function closeModal() { const m = $('#modal'); if (m) { m.classList.remove('open'); m.innerHTML = ''; } }
+const num = id => { const v = parseFloat($('#' + id).value); return isNaN(v) ? null : v; };
+const txt = id => $('#' + id).value.trim();
+
+// ---------- settings ----------
+function openSettings() {
+  const s = S.settings;
+  modal(`<h3>&#9881; Settings</h3>
+    <label class="f">Your name</label><input id="st-name" value="${esc(s.name)}" placeholder="Optional">
+    <label class="f">Current FTP (watts)</label><input id="st-ftp" type="number" value="${s.ftp}">
+    <label class="f">Goal FTP (watts)</label><input id="st-goal" type="number" value="${s.goalFtp}">
+    <label class="f" style="display:flex;gap:8px;align-items:center;margin-top:12px"><input id="st-pin" type="checkbox" style="width:auto" ${s.ftpPinned ? 'checked' : ''}> Pin FTP to this value (turn OFF auto-updates from your ride data)</label>
+    <label class="f">Body weight (kg, optional)</label><input id="st-wt" type="number" step="0.1" value="${s.weightKg ?? ''}">
+    <label class="f">Base water target (L/day)</label><input id="st-water" type="number" step="0.1" value="${s.waterBase}">
+    <label class="f">Estimated sweat rate (L per hour on the bike)</label><input id="st-sweat" type="number" step="0.05" value="${s.sweatPerHr}">
+    <div class="modal-actions">
+      <button class="btn ghost" data-act="export">Export data</button>
+      <button class="btn ghost" data-act="import">Import data</button>
+      <button class="btn" data-act="save-settings">Save</button>
+    </div>
+    <input id="import-file" type="file" accept=".json" style="display:none">`);
+}
+function saveSettings() {
+  const s = S.settings;
+  if (num('st-ftp')) s.ftp = num('st-ftp');
+  if (num('st-goal')) s.goalFtp = num('st-goal');
+  s.ftpPinned = !!($('#st-pin') && $('#st-pin').checked);
+  s.name = txt('st-name');
+  s.weightKg = num('st-wt');
+  if (num('st-water')) s.waterBase = num('st-water');
+  if (num('st-sweat')) s.sweatPerHr = num('st-sweat');
+  save(); closeModal(); render();
+}
+function exportData() {
+  const blob = new Blob([JSON.stringify(S, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `rideready-backup-${todayKey()}.json`;
+  a.click(); URL.revokeObjectURL(a.href);
+}
+function importData(file) {
+  const r = new FileReader();
+  r.onload = () => {
+    try {
+      const p = JSON.parse(r.result);
+      S = { ...structuredClone(DEFAULTS), ...p, settings: { ...DEFAULTS.settings, ...(p.settings || {}) } };
+      save(); closeModal(); render();
+    } catch (e) { alert('Could not read that file: ' + e.message); }
+  };
+  r.readAsText(file);
+}
+
+// ---------- sync merge (RideReady Sync injects window.RIDEREADY_SYNC) ----------
+function mergeSyncData() {
+  const sd = window.RIDEREADY_SYNC;
+  if (!sd || !sd.days) return;
+  for (const [k, v] of Object.entries(sd.days)) {
+    const d = day(k);
+    if (v.whoop) { d.whoop = { ...(d.whoop || {}), ...v.whoop }; d.whoopAuto = true; }
+    if (v.ride && (!d.ride || d.rideAuto)) { d.ride = v.ride; d.rideAuto = true; }
+  }
+  applyFtpEstimate(sd.ftp_estimate);   // rolling FTP from synced power data
+  save();
+}
+
+// ---------- server profile sync (multi-device: phone + desktop) ----------
+let pushTimer = null;
+function save() {
+  S.meta = S.meta || { updatedAt: 0 };
+  S.meta.updatedAt = Date.now();
+  localStorage.setItem(LS_KEY, JSON.stringify(S));
+  if (pushTimer) return;
+  pushTimer = setTimeout(pushProfile, 1500);
+}
+async function pushProfile() {
+  pushTimer = null;
+  try {
+    await fetch('/profile', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(S) });
+  } catch (e) { /* offline or file-mode: retry on next save */ }
+}
+async function pullProfile() {
+  try {
+    const r = await fetch('/profile');
+    if (!r.ok) return;
+    const p = await r.json();
+    if (p && p.meta && p.meta.updatedAt > (S.meta || { updatedAt: 0 }).updatedAt) {
+      S = { ...structuredClone(DEFAULTS), ...p, settings: { ...DEFAULTS.settings, ...(p.settings || {}) } };
+      mergeSyncData();
+      render();
+    }
+  } catch (e) { /* file-mode or offline: keep local state */ }
+}
+
+// ---------- auto FTP (rolling estimate from synced ride power) ----------
+function applyFtpEstimate(est) {
+  if (!est || S.settings.ftpPinned) return false;
+  const cur = +S.settings.ftp || 220;
+  if (est >= Math.round(cur * 1.03) || est <= Math.round(cur * 0.97)) {
+    S.settings.ftp = est;
+    S.ftpLog = (S.ftpLog || []).filter(x => x.date !== todayKey());
+    S.ftpLog.push({ date: todayKey(), ftp: est, auto: true });
+    return true;
+  }
+  return false;
+}
+
+// ---------- recovery-adaptive daily target ----------
+function planAdjustment(k) {
+  const d = peekDay(k);
+  const rec = d && d.whoop ? d.whoop.recovery : null;
+  if (rec == null) return null;
+  if (rec < 50) return { level: 'warn', text: 'Recovery is in the red — swap today\u2019s intervals for an easy Z1\u2013Z2 spin, hydrate, and prioritize sleep tonight.' };
+  if (rec < 70) return { level: 'note', text: 'Recovery is moderate — do the planned session, but drop one interval set if the legs feel heavy.' };
+  return { level: 'good', text: 'Recovery is green — hit the planned workout as written.' };
+}
+
+// ---------- photo scanning (fridge / meal labels) ----------
+async function visionScan(kind, dataUrl) {
+  const box = $('#vision-result');
+  if (box) box.innerHTML = '<div class="sub">&#128248; Reading photo\u2026</div>';
+  try {
+    const r = await fetch('/vision', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ kind, image: dataUrl }) });
+    if (r.status === 401) { showLogin(); return; }
+    const j = await r.json();
+    if (!j.ok) { if (box) box.innerHTML = `<div class="note warn">${esc(j.error || 'scan failed')}</div>`; return; }
+    if (kind === 'fridge') {
+      window.__visionItems = (j.result.items || []);
+      if (!window.__visionItems.length) { if (box) box.innerHTML = '<div class="note warn">No food items detected.</div>'; return; }
+      if (box) box.innerHTML = `<div class="note good">Found: ${window.__visionItems.map(esc).join(', ')}</div>
+        <button class="btn small" data-act="vision-add-items" style="margin-top:8px">Add ${window.__visionItems.length} items to fridge</button>`;
+    } else {
+      const m = j.result || {};
+      if (m.name == null || m.kcal == null) { if (box) box.innerHTML = '<div class="note warn">Could not read macros from that photo.</div>'; return; }
+      const it = { name: `${m.name} (scanned)`, grams: null, kcal: Math.round(m.kcal), p: m.p || 0, c: m.c || 0, f: m.f || 0, fib: m.fib || 0 };
+      window.__visionItems = [it];
+      if (box) box.innerHTML = `<div class="note good">${esc(m.name)}: ${it.kcal} kcal \u00b7 ${it.p}P ${it.c}C ${it.f}F ${it.fib}fb</div>
+        <button class="btn small" data-act="vision-add-food" style="margin-top:8px">Add to today + saved foods</button>`;
+    }
+  } catch (e) {
+    if (box) box.innerHTML = `<div class="note warn">Photo scan needs the sync running at localhost:8765 (or the cloud URL). ${esc(e.message)}</div>`;
+  }
+}
+function readPhoto(kind, file) {
+  const r = new FileReader();
+  r.onload = () => visionScan(kind, r.result);
+  r.readAsDataURL(file);
+}
+
+// ---------- login overlay (when the server has a password) ----------
+function showLogin() {
+  modal(`<h3>&#128274; Sign in to RideReady</h3>
+    <label class="f">Password</label><input id="lg-pw" type="password">
+    <div class="modal-actions"><button class="btn" data-act="do-login">Sign in</button></div>`);
+}
+async function doLogin() {
+  const pw = txt('lg-pw');
+  const r = await fetch('/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: pw }) });
+  if (r.ok) { closeModal(); location.reload(); }
+  else { alert('Wrong password'); }
+}
+
+// ---------- event delegation ----------
+document.addEventListener('click', e => {
+  const t = e.target.closest('[data-act]');
+  if (!t) return;
+  const a = t.dataset.act, k = t.dataset.k || todayKey();
+  const acts = {
+    'close-modal': closeModal,
+    'toggle-daytype'() { const d = day(k); d.dayType = dayType(k) === 'exercise' ? 'rest' : 'exercise'; save(); render(); },
+    'toggle-mob'() { const d = day(k); d.mob[t.dataset.which] = !d.mob[t.dataset.which]; save(); render(); },
+    'toggle-lift'() { const d = day(k); d.liftDone = !d.liftDone; save(); render(); },
+    'goto'() { VIEW = t.dataset.view; $$('#nav button').forEach(x => x.classList.toggle('active', x.dataset.view === VIEW)); render(); },
+    'open-settings': openSettings, 'save-settings': saveSettings,
+    'export': exportData,
+    'import'() { $('#import-file').click(); },
+    'week-prev'() { weekOffset--; render(); },
+    'week-next'() { weekOffset++; render(); },
+    'vision-add-items'() {
+      (window.__visionItems || []).forEach(x => {
+        if (!S.fridge.some(f => f.name.toLowerCase() === String(x).toLowerCase())) S.fridge.push({ name: x });
+      });
+      save(); window.__visionItems = null; render();
+    },
+    'vision-add-food'() {
+      const it = (window.__visionItems || [])[0];
+      if (it) { S.customFoods.push({ n: it.name, kcal: it.kcal, p: it.p, c: it.c, f: it.f, fib: it.fib }); day().food.push({ ...it }); save(); }
+      window.__visionItems = null; render();
+    },
+    'do-login'() { doLogin(); },
+  };
+  if (acts[a]) { acts[a](); return; }
+  if (VIEW === 'today' || VIEW === 'fuel') dayActs(a, t, k);
+  if (VIEW === 'meals') mealActs(a, t, k);
+  if (VIEW === 'progress') progActs(a, t, k);
+  if (a.startsWith('open-') || a.startsWith('save-') || a.startsWith('add-') || a.startsWith('del-')) render();
+});
+document.addEventListener('change', e => {
+  const t = e.target;
+  if (t.id === 'import-file' && t.files[0]) importData(t.files[0]);
+  if (t.dataset && t.dataset.photo && t.files && t.files[0]) readPhoto(t.dataset.photo, t.files[0]);
+});
+// input handlers that must NOT re-render (focus preservation)
+document.addEventListener('input', e => {
+  const t = e.target;
+  if (t.id === 'food-search') { renderFoodResults(t.value); }
+});
+
+
+// RideReady views: Today, Week, Fuel (logging), Meals (fridge/recipes/grocery).
+'use strict';
+
+// =================== TODAY ===================
+VIEWS.today = () => {
+  const k = todayKey(), tpl = tplFor(k), d = day(k), tg = targets(k), tot = totals(k), w = d.whoop;
+  const rec = sleepRec(k);
+  const rideDone = d.ride ? `<span class="sub">Logged: <b style="color:var(--green)">${d.ride.minutes} min</b>${d.ride.avgPower ? `, avg ${d.ride.avgPower} W` : ''}</span>` : '';
+  const whoopCard = w ? `
+    <div class="row spread"><span class="big" style="color:var(--${recoveryColor(w.recovery) || 'tx'})">${w.recovery ?? '—'}%</span>
+    <span class="sub">recovery</span></div>
+    <div class="kv"><span>Sleep last night</span><b>${w.sleepHrs ?? '—'} h${w.sleepHrs != null && w.sleepHrs < 7 ? ' ⚠' : ''}</b></div>
+    <div class="kv"><span>HRV / RHR</span><b>${w.hrv ?? '—'} ms / ${w.rhr ?? '—'} bpm</b></div>
+    <div class="kv"><span>Day strain</span><b>${w.strain ?? '—'}</b></div>
+    <button class="btn ghost small" data-act="open-whoop">Update</button>` : `
+    <div class="empty">No Whoop data yet today.</div>
+    <button class="btn" data-act="open-whoop">+ Add Whoop data</button>`;
+  const mobCheck = (which, label) => `
+    <div class="check ${d.mob[which] ? 'done' : ''}" data-act="toggle-mob" data-which="${which}">
+      <span class="tick">&#10003;</span>${label}</div>`;
+  const sug = ftpSuggestion();
+  const adj = planAdjustment(k);
+  const adjCard = !adj ? '' : `<div class="note ${adj.level === 'warn' ? 'warn' : adj.level === 'good' ? 'good' : ''}" style="margin-bottom:10px">
+      <b>Today's call:</b> ${adj.text}</div>`;
+  const sugCard = !sug ? '' : `<div class="card" style="grid-column:1/-1">
+      <h3>&#128736; FTP check-in</h3>
+      <p style="margin:4px 0">Your last ${sug.n} synced rides averaged <b>${sug.avg} W</b> — that's ${sug.dir === 'up' ? 'well above' : 'below'} what your current FTP (${S.settings.ftp} W) says your zones are.
+      ${sug.dir === 'up'
+        ? 'If rides that <i>feel</i> easy are producing these numbers, your FTP has probably moved up — time for a retest (20-min test: FTP &asymp; 95% of average watts) and log it in Progress.'
+        : 'No need to chase it — if you have been fatigued or under-recovered, Whoop will say so. Otherwise consider a retest and log it in Progress.'}</p>
+    </div>`;
+  return `${sugCard}<div class="grid">
+    ${adjCard}
+    <div class="card">
+      <h2>${fmtDate(k)}</h2>
+      <div class="row">
+        <span class="badge ${dayType(k)}" data-act="toggle-daytype" title="Tap to switch rest ↔ exercise day">${dayType(k) === 'exercise' ? 'EXERCISE DAY' : 'REST DAY'}</span>
+        ${tpl.coach ? '<span class="badge coach plain">Coach session</span>' : ''}
+        <span class="badge plain" style="background:rgba(56,189,248,.12);color:var(--accent);cursor:default">${d.whoopAuto ? '&#9889; auto-synced' : ''}</span>
+      </div>
+      <div style="margin-top:12px">${whoopCard}</div>
+    </div>
+    <div class="card">
+      <h3>Today's ride — ${tpl.name}</h3>
+      ${tpl.bike ? `<div class="row spread"><span class="big">${tpl.bike}<span class="sub"> min planned</span></span>${rideDone}</div>` : `<div class="empty">No bike ride planned today — recovery day.</div>`}
+      <p class="sub">${tpl.desc}</p>
+      <div style="margin:10px 0">${zones().map(z => `<div class="zone"><span>${z[0]}</span><b>${z[1]}</b></div>`).join('')}</div>
+      <div class="stack">
+        ${mobCheck('large', 'Large mobility workout')}
+        ${mobCheck('small', 'Small mobility workout')}
+        ${tpl.lift ? `<div class="check ${d.liftDone ? 'done' : ''}" data-act="toggle-lift"><span class="tick">&#10003;</span>Lift #${tpl.d === 'Tue' ? 1 : 2} (strength)</div>` : ''}
+      </div>
+      <div class="row" style="margin-top:10px">
+        <button class="btn" data-act="open-ride">${d.ride ? 'Edit ride log' : '+ Log ride'}</button>
+        <button class="btn ghost" data-act="open-whoop">${w ? 'Update Whoop' : '+ Whoop data'}</button>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Fuel — ${dayType(k) === 'exercise' ? 'exercise day' : 'rest day'} targets</h3>
+      ${meter('Calories', tot.kcal, tg.kcalMin, tg.kcalMax, '')}
+      ${singleMeter('Protein', tot.p, tg.p, 'g', tg.p * 0.95)}
+      ${singleMeter('Carbs', tot.c, tg.c, 'g', tg.c * 0.9)}
+      ${singleMeter('Fat', tot.f, tg.f, 'g')}
+      ${singleMeter('Fiber', tot.fib, tg.fib, 'g')}
+      <div id="water-meter">${singleMeter('Water', d.water, waterTarget(k), 'L', waterTarget(k) * 0.9)}</div>
+      <button class="btn ghost" data-act="goto" data-view="fuel">Open food log &#8594;</button>
+    </div>
+    <div class="card">
+      <h3>Tonight's sleep target</h3>
+      <div class="big">${Math.floor(rec.h)} h ${pad(Math.round((rec.h % 1) * 60))} m</div>
+      ${rec.notes.length ? `<p class="sub">+ extra because: ${rec.notes.join(', ')}.</p>` : '<p class="sub">Base target for training recovery.</p>'}
+      ${w && w.recovery != null && w.recovery < 50 ? '<div class="note warn" style="margin-top:8px">Recovery is in the red — consider keeping today easy and prioritizing an earlier bedtime.</div>' : ''}
+      ${w && w.recovery != null && w.recovery >= 70 ? '<div class="note good" style="margin-top:8px">Green recovery — good day to hit the planned intervals.</div>' : ''}
+    </div>
+  </div>`;
+};
+
+// =================== WEEK ===================
+let weekOffset = 0;
+function weekStart(offset) {
+  const d = new Date(); d.setHours(0, 0, 0, 0);
+  const dow = (d.getDay() + 6) % 7; // Mon=0
+  d.setDate(d.getDate() - dow + offset * 7);
+  return dkey(d);
+}
+VIEWS.week = () => {
+  const start = weekStart(weekOffset);
+  const days = [...Array(7)].map((_, i) => addDays(start, i));
+  let planned = 0, logged = 0, mobDone = 0;
+  const rows = days.map(k => {
+    const tpl = tplFor(k), d = peekDay(k);
+    planned += tpl.bike;
+    const rideMin = bikeMinutes(k); logged += rideMin;
+    const mobL = d && d.mob && d.mob.large, mobS = d && d.mob && d.mob.small;
+    if (mobL && mobS) mobDone++;
+    const isToday = k === todayKey();
+    return `<tr>
+      <td><b>${tpl.d}${isToday ? ' •' : ''}</b><br><span class="sub">${fmtDate(k).slice(4)}</span></td>
+      <td>${tpl.bike ? `<b>${tpl.name}</b><br><span class="sub">${tpl.desc.slice(0, 72)}…</span>` : '<i class="sub">—</i>'}</td>
+      <td class="center ${tpl.bike ? '' : 'sub'}">${tpl.bike ? tpl.bike + '′' : '—'}</td>
+      <td class="${rideMin >= tpl.bike && tpl.bike ? 'done' : (rideMin ? '' : 'sub')}">${rideMin ? rideMin + '′' : '—'}</td>
+      <td class="${mobL ? 'done' : 'sub'}">${mobL ? '&#10003;' : '·'}</td>
+      <td class="${mobS ? 'done' : 'sub'}">${mobS ? '&#10003;' : '·'}</td>
+      <td>${tpl.lift ? (d && d.liftDone ? '<span class="done">&#10003;</span>' : '<span class="sub">·</span>') : '<span class="sub">—</span>'}</td>
+      <td><span class="badge ${dayType(k)}" data-act="toggle-daytype" data-k="${k}" title="Tap to switch">${dayType(k) === 'exercise' ? 'EX' : 'REST'}</span></td>
+    </tr>`;
+  }).join('');
+  return `<div class="card">
+    <div class="row spread">
+      <h2>Week of ${fmtDate(start)}</h2>
+      <div class="row">
+        <button class="btn ghost small" data-act="week-prev">&#8592; Prev</button>
+        <button class="btn ghost small" data-act="week-next">Next &#8594;</button>
+      </div>
+    </div>
+    <table class="wk">
+      <tr><th>Day</th><th>Planned ride</th><th>Plan</th><th>Done</th><th>Mob L</th><th>Mob S</th><th>Lift</th><th>Fuel</th></tr>
+      ${rows}
+    </table>
+    <div class="hrs-total">
+      <div><b style="color:${planned >= 480 ? 'var(--green)' : 'var(--red)'}">${round1(planned / 60)} h</b><br>planned ride time</div>
+      <div><b style="color:${logged >= 480 ? 'var(--green)' : 'var(--yellow)'}">${round1(logged / 60)} h</b><br>logged this week</div>
+      <div><b>8 h</b><br>weekly goal</div>
+      <div><b>${mobDone}/7</b><br>both mobility done</div>
+    </div>
+    <p class="sub" style="margin-top:12px">Tap a badge in the Fuel column to switch that day between rest and exercise macros. Log actual rides from the Today tab.</p>
+  </div>`;
+};
+
+// =================== FUEL ===================
+function renderFoodResults(q) {
+  const box = $('#food-results');
+  if (!box) return;
+  q = (q || '').trim().toLowerCase();
+  const pool = [
+    ...FOODS.map((f, i) => ({ src: 'db', i, n: f.n })),
+    ...S.customFoods.map((f, i) => ({ src: 'cu', i, n: f.n })),
+  ];
+  const hits = q ? pool.filter(f => f.n.toLowerCase().includes(q)).slice(0, 8) : [];
+  box.innerHTML = q && !hits.length
+    ? `<div class="empty">No match. <button class="btn ghost small" data-act="open-custom">Add "${esc(q)}" as custom food</button></div>`
+    : hits.map(h => `<div class="food-item" data-act="pick-food" data-src="${h.src}" data-i="${h.i}">
+        <span>${esc(h.n)}</span><span class="macros">${h.src === 'db' ? 'per 100 g' : 'per serving'} &#8594;</span></div>`).join('');
+}
+VIEWS.fuel = () => {
+  const k = todayKey(), d = day(k), tg = targets(k), tot = totals(k);
+  return `<div class="grid">
+    <div class="card">
+      <h3>Add food — ${fmtDate(k)}</h3>
+      <input id="food-search" placeholder="Search food (e.g. chicken, oats, banana)…" autocomplete="off">
+      <div id="food-results" class="res-list" style="margin-top:6px"></div>
+      <div class="row" style="margin-top:10px">
+        <button class="btn ghost small" data-act="open-custom">+ Custom food</button>
+        <button class="btn ghost small" data-act="open-water">Water quick-add</button>
+        <label class="btn ghost small" style="cursor:pointer">&#128248; Scan meal label
+          <input type="file" accept="image/*" capture="environment" style="display:none" data-photo="label"></label>
+      </div>
+      <div id="vision-result" style="margin-top:8px"></div>
+    </div>
+    <div class="card">
+      <h3>Today's log (${tot.foodCount || (d.food || []).length} items)</h3>
+      ${(d.food || []).map((it, i) => `<div class="food-item"><span>${esc(it.name)} <span class="sub">(${it.grams ? it.grams + ' g' : '1 serving'})</span></span>
+        <span class="macros">${nf(it.kcal)} kcal · ${round1(it.p)}P ${round1(it.c)}C ${round1(it.f)}F ${round1(it.fib)}fb
+        <button data-act="del-food" data-i="${i}" title="Remove">&#10005;</button></span></div>`).join('') || '<div class="empty">Nothing logged yet — search on the left.</div>'}
+    </div>
+    <div class="card">
+      <h3>Targets vs eaten</h3>
+      ${meter('Calories', tot.kcal, tg.kcalMin, tg.kcalMax, '')}
+      ${singleMeter('Protein', tot.p, tg.p, 'g', tg.p * 0.95)}
+      ${singleMeter('Carbs', tot.c, tg.c, 'g', tg.c * 0.9)}
+      ${singleMeter('Fat', tot.f, tg.f, 'g')}
+      ${singleMeter('Fiber', tot.fib, tg.fib, 'g')}
+      <div id="water-meter">
+        <div class="lab" style="display:flex;justify-content:space-between;font-size:12.5px;color:var(--mut)"><span>Water (L) — tap ±</span><b>${round1(d.water)} / ${waterTarget(k)}</b></div>
+        <div class="row" style="margin-top:6px">
+          <button class="btn ghost small" data-act="water-add" data-v="-0.25">&#8722;</button>
+          <button class="btn ghost small" data-act="water-add" data-v="0.25">+</button>
+          <button class="btn ghost small" data-act="water-add" data-v="0.75">+ big glass (750 ml)</button>
+        </div>
+      </div>
+      <div class="row" style="margin-top:12px">
+        <span class="badge ${dayType(k)}" data-act="toggle-daytype">${dayType(k) === 'exercise' ? 'EXERCISE DAY' : 'REST DAY'}</span>
+        <span class="sub">tap to switch targets</span>
+      </div>
+    </div>
+  </div>`;
+};
+
+// ---- day-tab actions (today + fuel) ----
+function dayActs(a, t, k) {
+  const d = day(k);
+  const acts = {
+    'open-ride'() {
+      modal(`<h3>Log ride</h3>
+        <label class="f">Minutes on the bike</label><input id="rd-min" type="number" value="${d.ride ? d.ride.minutes : tplFor(k).bike}">
+        <label class="f">Average power (W, optional)</label><input id="rd-pw" type="number" value="${d.ride && d.ride.avgPower != null ? d.ride.avgPower : ''}">
+        <label class="f">Notes</label><input id="rd-note" value="${d.ride ? esc(d.ride.notes || '') : ''}">
+        <div class="modal-actions"><button class="btn ghost" data-act="close-modal">Cancel</button>
+        <button class="btn" data-act="save-ride" data-k="${k}">Save</button></div>`);
+    },
+    'save-ride'() {
+      const m = num('rd-min');
+      d.ride = m ? { minutes: m, avgPower: num('rd-pw'), notes: txt('rd-note') } : null;
+      save(); closeModal();
+    },
+    'open-whoop'() {
+      const w = d.whoop || {};
+      modal(`<h3>Whoop — ${fmtDate(k)}</h3>
+        <p class="sub">Copy today's numbers from the Whoop app.</p>
+        <label class="f">Sleep last night (hours)</label><input id="wh-sleep" type="number" step="0.25" value="${w.sleepHrs ?? ''}">
+        <label class="f">Recovery (%)</label><input id="wh-rec" type="number" value="${w.recovery ?? ''}">
+        <label class="f">HRV (ms)</label><input id="wh-hrv" type="number" value="${w.hrv ?? ''}">
+        <label class="f">Resting heart rate (bpm)</label><input id="wh-rhr" type="number" value="${w.rhr ?? ''}">
+        <label class="f">Day strain</label><input id="wh-strain" type="number" step="0.1" value="${w.strain ?? ''}">
+        <div class="modal-actions"><button class="btn ghost" data-act="close-modal">Cancel</button>
+        <button class="btn" data-act="save-whoop" data-k="${k}">Save</button></div>`);
+    },
+    'save-whoop'() {
+      d.whoop = { sleepHrs: num('wh-sleep'), recovery: num('wh-rec'), hrv: num('wh-hrv'), rhr: num('wh-rhr'), strain: num('wh-strain') };
+      save(); closeModal();
+    },
+    'pick-food'() {
+      let item;
+      if (t.dataset.src === 'db') {
+        const f = FOODS[+t.dataset.i];
+        modal(`<h3>${esc(f.n)}</h3><p class="sub">Per 100 g: ${kcalOf(f)} kcal · ${f.p}P ${f.c}C ${f.f}F ${f.fib}g fiber</p>
+          <label class="f">Amount (g)</label><input id="pf-g" type="number" value="${f.s}">
+          <div class="modal-actions"><button class="btn ghost" data-act="close-modal">Cancel</button>
+          <button class="btn" data-act="save-food" data-src="db" data-i="${t.dataset.i}" data-k="${k}">Add</button></div>`);
+      } else {
+        const f = S.customFoods[+t.dataset.i];
+        d.food.push({ name: f.n, grams: null, kcal: f.kcal, p: f.p, c: f.c, f: f.f, fib: f.fib });
+        save();
+      }
+    },
+    'save-food'() {
+      const g = num('pf-g') || 100;
+      const f = FOODS[+t.dataset.i];
+      const r = g / 100;
+      d.food.push({ name: f.n, grams: g, kcal: Math.round(kcalOf(f) * r), p: round1(f.p * r), c: round1(f.c * r), f: round1(f.f * r), fib: round1(f.fib * r) });
+      save(); closeModal();
+    },
+    'open-custom'() {
+      const q = $('#food-search') ? $('#food-search').value.trim() : '';
+      modal(`<h3>Custom food (per serving)</h3>
+        <label class="f">Name</label><input id="cf-n" value="${esc(q)}">
+        <label class="f">Calories</label><input id="cf-k" type="number">
+        <label class="f">Protein (g)</label><input id="cf-p" type="number">
+        <label class="f">Carbs (g)</label><input id="cf-c" type="number">
+        <label class="f">Fat (g)</label><input id="cf-f" type="number">
+        <label class="f">Fiber (g)</label><input id="cf-fb" type="number" value="0">
+        <div class="modal-actions"><button class="btn ghost" data-act="close-modal">Cancel</button>
+        <button class="btn" data-act="save-custom" data-k="${k}">Add to today + save food</button></div>`);
+    },
+    'save-custom'() {
+      const item = { name: txt('cf-n') || 'Custom food', grams: null, kcal: num('cf-k') || 0, p: num('cf-p') || 0, c: num('cf-c') || 0, f: num('cf-f') || 0, fib: num('cf-fb') || 0 };
+      S.customFoods.push({ n: item.name, kcal: item.kcal, p: item.p, c: item.c, f: item.f, fib: item.fib });
+      d.food.push(item);
+      save(); closeModal();
+    },
+    'del-food'() { d.food.splice(+t.dataset.i, 1); save(); },
+    'open-water'() {
+      modal(`<h3>Water — ${fmtDate(k)}</h3>
+        <label class="f">Liters drunk today</label><input id="wt-l" type="number" step="0.25" value="${d.water}">
+        <p class="sub">Target today: ${waterTarget(k)} L (base ${S.settings.waterBase} L ${bikeMinutes(k) ? '+ ' + round1((+S.settings.sweatPerHr || .75) * bikeMinutes(k) / 60) + ' L ride sweat' : ''})</p>
+        <div class="modal-actions"><button class="btn ghost" data-act="close-modal">Cancel</button>
+        <button class="btn" data-act="save-water" data-k="${k}">Save</button></div>`);
+    },
+    'save-water'() { d.water = num('wt-l') || 0; save(); closeModal(); },
+    'water-add'() { d.water = round1(Math.max(0, d.water + parseFloat(t.dataset.v))); save(); },
+  };
+  if (acts[a]) acts[a]();
+}
+
+// =================== MEALS ===================
+function ingTokens(s) {
+  return s.toLowerCase().replace(/[^a-z\s]/g, ' ').split(/\s+/)
+    .filter(w => w.length >= 4 && !['grams','gram','cooked','slices','slice','large','small','sauce','breast','water','olive'].includes(w));
+}
+function haveIng(ing) {
+  const toks = ingTokens(ing);
+  if (!toks.length) return false;
+  return S.fridge.some(fi => {
+    const fn = fi.name.toLowerCase();
+    return toks.some(tk => fn.includes(tk.slice(0, Math.max(4, tk.length - 1))));
+  });
+}
+function recipeCoverage(r) {
+  const have = r.ing.filter(haveIng).length;
+  return have / r.ing.length;
+}
+VIEWS.meals = () => {
+  const k = todayKey(), tg = targets(k), tot = totals(k);
+  const rem = { p: Math.max(0, tg.p - tot.p), c: Math.max(0, tg.c - tot.c), f: Math.max(0, tg.f - tot.f) };
+  const ranked = RECIPES.map(r => ({ r, cov: recipeCoverage(r) }))
+    .sort((a, b) => b.cov - a.cov || (b.r.per.p - a.r.per.p));
+  return `<div class="grid">
+    <div class="card">
+      <h3>Fridge &amp; pantry</h3>
+      <div class="row"><input id="fr-in" placeholder="Add item (e.g. chicken breast)"><button class="btn" data-act="add-fridge">Add</button></div>
+      <label class="f">Or paste a whole list (from a photo readout or grocery haul)</label>
+      <textarea id="fr-bulk" rows="3" placeholder="chicken breast, eggs, spinach&#10;greek yogurt, rice…"></textarea>
+      <button class="btn ghost small" data-act="add-fridge-bulk" style="margin-top:6px">Add all to fridge</button>
+      <label class="f">&#128248; Or photograph your fridge/shelf</label>
+      <label class="btn small" style="display:inline-block;cursor:pointer">&#128248; Add fridge photo
+        <input type="file" accept="image/*" capture="environment" style="display:none" data-photo="fridge"></label>
+      <div id="vision-result" style="margin-top:8px"></div>
+      <div class="fridge-chips" style="margin-top:10px">
+        ${S.fridge.map((f, i) => `<span>${esc(f.name)}<button data-act="del-fridge" data-i="${i}" title="Remove">&#10005;</button></span>`).join('') || '<span class="empty">Empty — add what you have on hand.</span>'}
+      </div>
+      <h3 style="margin-top:16px">Grocery list</h3>
+      <ul class="groc">
+        ${S.grocery.map((g, i) => `<li><span>${esc(g.name)}</span><button data-act="del-grocery" data-i="${i}">&#10005;</button></li>`).join('') || '<li class="empty">Nothing yet — add missing recipe ingredients below.</li>'}
+      </ul>
+      ${S.grocery.length ? '<button class="btn ghost small" data-act="clear-grocery">Clear list</button>' : ''}
+    </div>
+    <div class="card" style="grid-column:1/-1">
+      <h3>Meal suggestions</h3>
+      <p class="sub">Still to hit today: <b>${nf(tg.kcalMin - Math.min(tot.kcal, tg.kcalMin))}+ kcal</b> · ${round1(rem.p)} g protein · ${round1(rem.c)} g carbs · ${round1(rem.f)} g fat. Green = you have it, yellow = buy it.</p>
+      <div class="rec-grid">
+        ${ranked.map(({ r, cov }) => {
+          const pct = Math.round(cov * 100);
+          const covCls = pct >= 80 ? 'var(--green)' : pct >= 50 ? 'var(--yellow)' : 'var(--mut)';
+          return `<div class="recipe">
+            <div class="row spread"><b>${esc(r.n)}</b><span class="cov" style="color:${covCls}">${pct}% in fridge</span></div>
+            <span class="sub">${r.meal}${r.tag ? ' · ' + r.tag : ''} · ${nf(r.per.kcal)} kcal · ${r.per.p}P ${r.per.c}C ${r.per.f}F ${r.per.fib}fb</span>
+            <div class="ing">${r.ing.map(i2 => `<b class="${haveIng(i2) ? 'have' : 'need'}">${esc(i2)}</b>`).join('')}</div>
+            ${pct < 100 ? `<button class="btn ghost small" data-act="add-missing" data-r="${RECIPES.indexOf(r)}">Add missing to grocery list</button>` : '<div class="note good">You can cook this now &#127869;</div>'}
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+  </div>`;
+};
+function mealActs(a, t) {
+  const acts = {
+    'add-fridge'() {
+      const el = $('#fr-in'); const v = el ? el.value.trim() : '';
+      if (v) { S.fridge.push({ name: v }); save(); }
+    },
+    'add-fridge-bulk'() {
+      const el = $('#fr-bulk'); const v = el ? el.value : '';
+      v.split(/[\n,;]+/).map(x => x.trim()).filter(Boolean).forEach(x => {
+        if (!S.fridge.some(f => f.name.toLowerCase() === x.toLowerCase())) S.fridge.push({ name: x });
+      });
+      save();
+    },
+    'del-fridge'() { S.fridge.splice(+t.dataset.i, 1); save(); },
+    'del-grocery'() { S.grocery.splice(+t.dataset.i, 1); save(); },
+    'clear-grocery'() { S.grocery = []; save(); },
+    'add-missing'() {
+      const r = RECIPES[+t.dataset.r];
+      r.ing.filter(i2 => !haveIng(i2)).forEach(i2 => {
+        if (!S.grocery.some(g => g.name.toLowerCase() === i2.toLowerCase())) S.grocery.push({ name: i2 });
+      });
+      save();
+    },
+  };
+  if (acts[a]) acts[a]();
+}
+
+
+// RideReady progress: charts (weekly hours, weight, FTP, recovery) + init.
+'use strict';
+
+// ---------- tiny SVG charts ----------
+function barChart(vals, labels, opts) {
+  const { goal = 8, unit = 'h', w = 640, h = 210, padL = 34, padB = 30, padT = 22 } = opts || {};
+  const max = Math.max(goal * 1.3, ...vals, 0.5);
+  const bw = (w - padL - 8) / Math.max(vals.length, 1);
+  let s = `<svg class="chart" viewBox="0 0 ${w} ${h}" preserveAspectRatio="xMidYMid meet">`;
+  for (let i = 0; i <= 4; i++) {
+    const y = padT + (h - padT - padB) * (i / 4), v = max * (1 - i / 4);
+    s += `<line x1="${padL}" y1="${y}" x2="${w - 4}" y2="${y}" stroke="#22304a" stroke-width="1"/>`
+       + `<text x="${padL - 5}" y="${y + 3}" fill="#8fa3bf" font-size="10" text-anchor="end">${round1(v)}</text>`;
+  }
+  const gy = padT + (h - padT - padB) * (1 - goal / max);
+  s += `<line x1="${padL}" y1="${gy}" x2="${w - 4}" y2="${gy}" stroke="#fbbf24" stroke-dasharray="5 4"/>`
+     + `<text x="${w - 6}" y="${gy - 4}" fill="#fbbf24" font-size="10" text-anchor="end">goal ${goal}${unit}</text>`;
+  vals.forEach((v, i) => {
+    const bh = (h - padT - padB) * (v / max);
+    const x = padL + i * bw + 3;
+    s += `<rect x="${x}" y="${h - padB - bh}" width="${bw - 6}" height="${Math.max(bh, 1.5)}" rx="3" fill="${v >= goal ? '#4ade80' : '#60a5fa'}"/>`;
+    if (v) s += `<text x="${x + (bw - 6) / 2}" y="${h - padB - bh - 4}" fill="#e2e8f0" font-size="10" text-anchor="middle">${round1(v)}</text>`;
+    s += `<text x="${x + (bw - 6) / 2}" y="${h - 9}" fill="#8fa3bf" font-size="10" text-anchor="middle">${labels[i]}</text>`;
+  });
+  return s + '</svg>';
+}
+function lineChart(data, opts) {
+  const { color = '#38bdf8', fmt = v => v, w = 640, h = 190, padL = 40, padB = 26, padT = 16, goal = null } = opts || {};
+  const pts = data.filter(p => p.v != null);
+  if (pts.length < 1) return '<div class="empty">No data yet.</div>';
+  const vals = pts.map(p => p.v); if (goal != null) vals.push(goal);
+  let min = Math.min(...vals), max = Math.max(...vals);
+  if (min === max) { min -= 1; max += 1; }
+  const span = max - min; min -= span * .1; max += span * .1;
+  const X = i => padL + (w - padL - 10) * (i / Math.max(pts.length - 1, 1));
+  const Y = v => padT + (h - padT - padB) * (1 - (v - min) / (max - min));
+  let s = `<svg class="chart" viewBox="0 0 ${w} ${h}">`;
+  for (let i = 0; i <= 3; i++) {
+    const y = padT + (h - padT - padB) * (i / 3), v = max - (max - min) * (i / 3);
+    s += `<line x1="${padL}" y1="${y}" x2="${w - 4}" y2="${y}" stroke="#22304a"/>`
+       + `<text x="${padL - 5}" y="${y + 3}" fill="#8fa3bf" font-size="10" text-anchor="end">${fmt(v)}</text>`;
+  }
+  if (goal != null) s += `<line x1="${padL}" y1="${Y(goal)}" x2="${w - 4}" y2="${Y(goal)}" stroke="#fbbf24" stroke-dasharray="5 4"/>`;
+  s += `<polyline fill="none" stroke="${color}" stroke-width="2.5" points="${pts.map((p, i) => `${X(i)},${Y(p.v)}`).join(' ')}"/>`;
+  pts.forEach((p, i) => {
+    s += `<circle cx="${X(i)}" cy="${Y(p.v)}" r="3.2" fill="${color}"/>`
+       + (pts.length <= 10 ? `<text x="${X(i)}" y="${h - 8}" fill="#8fa3bf" font-size="9.5" text-anchor="middle">${p.l || ''}</text>` : '');
+  });
+  return s + '</svg>';
+}
+
+// ---------- progress view ----------
+VIEWS.progress = () => {
+  // weekly ride hours, last 8 weeks
+  const wkVals = [], wkLabels = [];
+  const start = weekStart(-7);
+  for (let i = 0; i < 8; i++) {
+    let mins = 0;
+    for (let j = 0; j < 7; j++) mins += bikeMinutes(addDays(start, i * 7 + j));
+    wkVals.push(round1(mins / 60));
+    wkLabels.push(`${MONTH[parseKey(addDays(start, i * 7)).getMonth()]}/${parseKey(addDays(start, i * 7)).getDate()}`);
+  }
+  // recovery + sleep, last 14 days
+  const recPts = [], sleepPts = [];
+  for (let i = 13; i >= 0; i--) {
+    const k = addDays(todayKey(), -i), d = peekDay(k);
+    if (d && d.whoop) {
+      const lab = `${parseKey(k).getDate()}/${parseKey(k).getMonth() + 1}`;
+      if (d.whoop.recovery != null) recPts.push({ v: d.whoop.recovery, l: lab });
+      if (d.whoop.sleepHrs != null) sleepPts.push({ v: d.whoop.sleepHrs, l: lab });
+    }
+  }
+  const wSorted = [...S.weightLog].sort((a, b) => a.date < b.date ? -1 : 1);
+  const fSorted = [...S.ftpLog].sort((a, b) => a.date < b.date ? -1 : 1);
+  return `<div class="grid">
+    <div class="card" style="grid-column:1/-1">
+      <div class="row spread"><h2>Weekly ride volume</h2><span class="sub">8 h/week goal</span></div>
+      ${barChart(wkVals, wkLabels, { goal: 8 })}
+    </div>
+    <div class="card">
+      <h3>Weight</h3>
+      ${lineChart(wSorted.map(x => ({ v: x.kg, l: x.date.slice(5) })), { color: '#60a5fa', fmt: v => round1(v) })}
+      <div class="row" style="margin-top:8px"><button class="btn small" data-act="open-weight">+ Log weight</button></div>
+    </div>
+    <div class="card">
+      <h3>FTP tests — now ${S.settings.ftp} W, goal ${S.settings.goalFtp} W</h3>
+      ${lineChart(fSorted.map(x => ({ v: x.ftp, l: x.date.slice(5) })), { color: '#4ade80', fmt: v => Math.round(v), goal: +S.settings.goalFtp })}
+      <div class="row" style="margin-top:8px"><button class="btn small" data-act="open-ftp">+ Log FTP test</button></div>
+    </div>
+    <div class="card">
+      <h3>Whoop recovery (14 days)</h3>
+      ${recPts.length ? lineChart(recPts, { color: '#4ade80', fmt: v => Math.round(v), goal: 70 }) : '<div class="empty">Add Whoop data on the Today tab to see trends.</div>'}
+    </div>
+    <div class="card">
+      <h3>Sleep (14 days)</h3>
+      ${sleepPts.length ? lineChart(sleepPts, { color: '#a78bfa', fmt: v => round1(v) }) : '<div class="empty">Log sleep via the Whoop card.</div>'}
+    </div>
+  </div>`;
+};
+function progActs(a, t) {
+  const acts = {
+    'open-weight'() {
+      modal(`<h3>Log weight</h3>
+        <label class="f">Date</label><input id="wg-d" type="date" value="${todayKey()}">
+        <label class="f">Weight (kg)</label><input id="wg-v" type="number" step="0.1">
+        <div class="modal-actions"><button class="btn ghost" data-act="close-modal">Cancel</button>
+        <button class="btn" data-act="save-weight">Save</button></div>`);
+    },
+    'save-weight'() {
+      const v = num('wg-v'); if (v == null) return closeModal();
+      const date = txt('wg-d') || todayKey();
+      S.weightLog = S.weightLog.filter(x => x.date !== date);
+      S.weightLog.push({ date, kg: v });
+      S.settings.weightKg = v;
+      save(); closeModal();
+    },
+    'open-ftp'() {
+      modal(`<h3>Log FTP test</h3>
+        <label class="f">Date</label><input id="ftp-d" type="date" value="${todayKey()}">
+        <label class="f">FTP (watts)</label><input id="ftp-v" type="number">
+        <label class="f" style="display:flex;gap:8px;align-items:center;margin-top:12px"><input id="ftp-cur" type="checkbox" checked style="width:auto"> Also set as current FTP</label>
+        <div class="modal-actions"><button class="btn ghost" data-act="close-modal">Cancel</button>
+        <button class="btn" data-act="save-ftp">Save</button></div>`);
+    },
+    'save-ftp'() {
+      const v = num('ftp-v'); if (v == null) return closeModal();
+      const date = txt('ftp-d') || todayKey();
+      S.ftpLog = S.ftpLog.filter(x => x.date !== date);
+      S.ftpLog.push({ date, ftp: v });
+      if ($('#ftp-cur').checked) S.settings.ftp = v;
+      save(); closeModal();
+    },
+  };
+  if (acts[a]) acts[a]();
+}
+
+// ---------- init ----------
+mergeSyncData();
+render();
+pullProfile();   // adopt a newer server-side profile (phone <-> desktop sync)
+
+</script>
+</body>
+</html>
